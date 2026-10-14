@@ -18,11 +18,12 @@ let parse_cents (s : string) : (int, string) result =
          && String.length cents_str = 2
          && is_digits cents_str -> (
       match (int_of_string_opt dollars_str, int_of_string_opt cents_str) with
-      | Some d, Some c ->
+      | Some d, Some c when d <= (max_int - c) / 100 ->
+          (* The guard ensures [(d * 100) + c] cannot overflow. *)
           let total = (d * 100) + c in
           if total > 0 then Ok total
           else Error (Printf.sprintf "Amount must be positive: %s" s)
-      | _ -> Error (Printf.sprintf "Numeric overflow in amount: %s" s))
+      | _ -> Error (Printf.sprintf "Amount is too large: %s" s))
   | _ ->
       Error
         (Printf.sprintf

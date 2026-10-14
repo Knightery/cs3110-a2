@@ -32,9 +32,31 @@
 ### Consequential revision during development
 - **Correcting the Cram validation file (2026-10-14):** The original `test/cram.t` gave `2017-11-06` through `2017-11-10` as the cash-run dates, but the supplied `data/small-spy-5days.csv` actually covers `2008-09-15` through `2008-09-19`. The buy-and-hold and momentum commands also lacked expected report lines. We inspected the CSV, independently calculated all three summaries, and updated the Cram expectations to cover the complete output. The revised suite then passed with `dune test` on 2026-10-14.
 
+- **Revision 2: strengthening validation after code review (2026-10-14):** All tests passed, but a review asked whether they could tell a correct program from a plausible incorrect one. To find out, we injected single defects into a copy of the code and ran the original six OUnit tests and three Cram runs against each. The original suite **still passed** with four of the five defects:
+  - momentum forgetting an unaffordable target;
+  - momentum comparing the selected security with current holdings instead of its remembered target;
+  - buy-and-hold retrying on later dates when it could not afford a share on the first date;
+  - the CLI exiting with status `0` on errors.
+
+  It caught only "negative-quantity sells are accepted". In response we made these changes:
+  1. Added `data/edge-cases.csv`, with OUnit tests for buy-and-hold and momentum on it (see Part 2).
+  2. Added OUnit groups for the engine's one-row-per-date contract, future-row independence, market parsing, each portfolio rule on its own, and report formatting.
+  3. Extended `test/cram.t` to check all three equity CSVs and eleven command-line errors with their exit status.
+
+  Re-running the same injected defects plus two more (the engine passing the *next* row to `step`, and the report printing `-0.00%`) against the revised suite, every defect causes at least one failure. The review also led to small program changes:
+  - The summary prints `Final holdings: none` when nothing is held.
+  - A tiny negative return prints `0.00%` rather than `-0.00%`.
+  - `parse_cents` rejects amounts too large to represent in cents instead of overflowing.
+  - Command-line errors end with a usage line.
+  - The unknown-strategy message lists the names from the strategy registry in `bin/main.ml`.
+
+  Because of these changes, the exact error text quoted in Task 4 above is out of date. `test/cram.t` now records the current messages.
+
 ### Design choices relevant to validation
 - `Strategy.S` accepts an optional hold symbol in `init`, allowing all strategies to use the same engine interface without calling strategy-specific helpers.
 - `Market.row.prices` stores `(security * int) list` in market-file column order, so momentum tie-breaking uses the required original order rather than the sorted order of a map.
+- `bin/main.ml` keeps a single list of available strategy modules, each sealed at `Strategy.S`, and finds the selected strategy by its `name`. Adding a fourth strategy means writing its module and adding it to that list. `Engine` and `Report` do not change.
+- When momentum switches targets, the cash available for the buy order is `Portfolio.value row portfolio`: selling every holding at today's prices turns the whole portfolio into cash. The engine still executes the sell orders before the buy, in the order proposed.
 
 ### Local verification record (2026-10-14)
 - `dune build` completed successfully without diagnostic output.
@@ -44,6 +66,12 @@
 - Manual `momentum` run: complete summary matched `$8.00` cash, 4 BETA shares, `$92.00` final value, and `-8.00%` return; `equity-momentum.csv` had `$100.00`, `$100.00`, `$92.00`.
 - The four manually tested error cases (missing `--hold`, negative `--cash`, unknown strategy, nonexistent market file) each reported a helpful error and exited with status `1`.
 - These observations establish that the tested executable paths and outputs match their predictions; they do not constitute exhaustive testing of every possible input.
+
+### Re-verification after Revision 2 (2026-10-14)
+- Environment: OCaml 5.2.1, dune 3.24.2, ocamlformat 0.29.0 (the version in `.ocamlformat`), ounit2 2.2.7, batteries 3.11.0, csv 2.4.
+- `dune build` from a clean `_build` produced no warnings or other output.
+- `dune build @fmt` reported no formatting differences.
+- `dune test`: `Ran: 51 tests ... OK`, and the Cram suite (three complete reports, three complete equity CSVs, eleven error invocations, and the no-output-file check) passed with no diff. The expectations for the three reports, the three equity CSVs, and eight error cases were written by hand from the calculations in Part 2 before the first run, and they matched exactly. The other three error cases (negative cash, an unknown option, and an unwritable output path) were added after running those commands by hand. One of them first failed because a blank output line was missing Cram's two-space indentation.
 
 ---
 
@@ -93,3 +121,44 @@ The supplied five SPY closing prices are `$104.61`, `$106.35`, `$101.58`, `$104.
 - **Buy-and-hold:** On the first date, buys `floor(1000000 / 10461) = 95` SPY shares, spending `993795` cents and leaving `6205` cents (`$62.05`). At the last price, final value is `6205 + 95 * 10812 = 1033345` cents (`$10333.45`) for a rounded `3.33%` total return. The independently calculated dated equity values, in dollars, are `$10000.00`, `$10165.30`, `$9712.15`, `$9998.10`, and `$10333.45`.
 - **Momentum:** On the first date makes no trade. The SPY price increases on the second date, so it buys `floor(1000000 / 10635) = 94` shares for `999690` cents, leaving `310` cents (`$3.10`). Because there is only one security, later increases select the same target and declines cause no orders. Its last value is `310 + 94 * 10812 = 1016638` cents (`$10166.38`), a rounded `1.66%` return. The independently calculated dated equity values are `$10000.00`, `$10000.00`, `$9551.62`, `$9834.56`, and `$10166.38`.
 - **Cram coverage:** `test/cram.t` contains all three commands and their complete expected standard-output summaries, including strategy name, correct date range, initial/final cash, final holdings, final portfolio value, and total return. **These predictions were calculated from the supplied CSV, and the revised Cram suite passed locally on 2026-10-14.**
+- **Equity CSVs and errors (added in Revision 2):** after each run, `cat` checks the complete equity CSV against the dated values above, including the exact `date,value` header. The cash summary prints `Final holdings: none`. Eleven invalid invocations are also pinned with their exact messages and exit status `[1]`: missing `--hold`; an unknown `--hold` symbol (`QQQ`, which is not in the market file, so this check needs the loaded header); an unknown strategy; cash of `10000`, `-100.00`, and `0.00`; an unknown option; missing `--cash`; two positional arguments; a missing market file; and an unwritable output path. A final `test -e out.csv` checks that none of the failed runs wrote an equity file.
+
+### Group 2 (continued): buy-and-hold on `data/edge-cases.csv` holding `OPAL` (`$100.00`)
+- **How `data/edge-cases.csv` exercises `buy-and-hold`:** It uses two new securities, `KILN` (cheap) and `OPAL` (expensive), over 7 dates (`2024-03-01` to `2024-03-11`). On the first date `OPAL` costs `$150.00`, so `10000 / 15000 = 0` shares are affordable and no order is made. `OPAL` later falls to `$90.00` (`2024-03-06`). A strategy that kept retrying after the first date would wrongly buy one share then.
+- **Expected:** every date has `cash = 10000`, `holdings = []`, `value = 10000`. **Final Summary:** Cash `$100.00`, no holdings, Final Value `$100.00`, Total Return `0.00%`.
+
+### Group 3 (continued): `momentum` on `data/edge-cases.csv` (`$100.00`)
+- **How `data/edge-cases.csv` exercises `momentum`:** `custom.csv` never selects a target that is too expensive to buy, so it cannot check two rules from the handout. First, a newly selected target is remembered even when no shares are affordable. Second, re-selecting the remembered target makes no orders, *even if no shares were purchased when that target was first selected*. This file checks both.
+
+| Date | KILN | OPAL | Changes | Decision | cash | holdings | value |
+|---|---|---|---|---|---|---|---|
+| 2024-03-01 | 8.00 | 150.00 | — | first date; remember prices, target none | 10000 | [] | 10000 |
+| 2024-03-04 | 9.00 | 149.00 | KILN +100, OPAL −100 | new target KILN; buy `10000 / 900 = 11` | 100 | KILN 11 | 10000 |
+| 2024-03-05 | 9.50 | 155.00 | KILN +50, OPAL +600 | new target OPAL; sell 11 KILN at 950 (cash 10550); `10550 / 15500 = 0`, so no buy, but target becomes OPAL | 10550 | [] | 10550 |
+| 2024-03-06 | 9.00 | 90.00 | KILN −50, OPAL −6000 | no positive increase; keep target OPAL | 10550 | [] | 10550 |
+| 2024-03-07 | 9.20 | 95.00 | KILN +20, OPAL +500 | OPAL is already the target, so **no orders** even though 1 share (9500) is now affordable | 10550 | [] | 10550 |
+| 2024-03-08 | 10.00 | 95.50 | KILN +80, OPAL +50 | new target KILN; nothing to sell; buy `10550 / 1000 = 10` | 550 | KILN 10 | 10550 |
+| 2024-03-11 | 11.00 | 96.00 | KILN +100, OPAL +50 | KILN is already the target; no orders | 550 | KILN 10 | 11550 |
+
+- **Final Summary:** Cash `$5.50`, Holdings `KILN: 10 shares`, Final Value `$115.50`, Total Return `15.50%`.
+- **Defects this exposes:** an implementation that keeps the old target (KILN) when the new one is unaffordable would buy 1 OPAL on `2024-03-07`. So would one that compares the selected security with current holdings instead of the remembered target. Both defects pass the `handout.csv` and `custom.csv` tests.
+
+### Additional validation beyond the four required groups
+These OUnit groups were added in Revision 2. Each expected value below is derived by hand from the stated inputs.
+- **Engine: current row only (R4.2).** `Recording_strategy` is a test-only strategy sealed at `Strategy.S` that records every row passed to `step`. On `custom.csv` it must observe exactly `market.rows`, once each and in order. A second test raises BOLT's final price in `custom.csv` from `$22.00` to `$99.00` and checks that momentum's first four dated states are unchanged. Only the final state changes: sell 5 APEX at 2000 (cash 11000), then buy `11000 / 9900 = 1` BOLT, giving cash 1100, BOLT 1, value 11000. This is the "future rows cannot affect past results" property, shown on real runs.
+- **Market parsing.** `handout.csv` loads as securities `[ALFA; BETA]`, and every row's prices are in integer cents in column order. A missing file gives `Error`. `parse_cents` accepts `10.00`, `0.01`, `10000.01`, and `007.50`. It rejects 14 malformed or non-positive amounts, including `10`, `10.0`, `10.000`, `.50`, `-1.00`, `+1.00`, `0.00`, `1,000.00`, `$1.00`, surrounding spaces, and an amount too large to represent in cents. `format_cents` is checked on `0`, `5`, `100`, and `1033345`.
+- **Portfolio accounting.** Each rejection rule is checked on its own and must leave a portfolio of 10000 cash and 2 ALFA unchanged:
+  - zero quantity;
+  - negative quantity;
+  - unknown security;
+  - a buy costing more than cash;
+  - a sell of more shares than held;
+  - a sell of a security not held.
+
+  Boundary cases:
+  - a buy costing exactly all cash is accepted;
+  - a buy one cent short (cash 9999, cost 10000) is rejected;
+  - selling every share removes the holding.
+
+  A sale followed by a buy that needs its proceeds succeeds. The same two orders reversed leave the buy rejected and the sale accepted. `total_return` is checked at `+6%`, `-8%`, and `3.3345%`.
+- **Report formatting.** `format_summary` reproduces the handout's Accounting Reference report exactly (`$63.00` cash, `ALFA: 2 shares`, `BETA: 1 share`, `$106.00`, `6.00%`). A one-cent loss on `$10,000.00` (`-0.0001%`) prints `0.00%`, not `-0.00%`, and empty holdings print `none`. `write_equity_csv` writes exactly `date,value`, `2024-01-02,100.00`, `2024-01-03,120.00`, and `2024-01-04,110.00` for buy-and-hold ALFA on `handout.csv`, and it returns `Error` for an unwritable path.

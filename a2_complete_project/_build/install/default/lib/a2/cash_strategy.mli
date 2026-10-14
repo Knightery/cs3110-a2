@@ -1,1 +1,0 @@
-../../../../default/lib/cash_strategy.mli

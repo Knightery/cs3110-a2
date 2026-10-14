@@ -50,15 +50,10 @@ let step (st : state) (row : Market.row) (portfolio : Portfolio.t) :
                   { Portfolio.security = sec; direction = Sell; quantity = qty })
                 held
             in
-            let sale_proceeds =
-              List.fold_left
-                (fun acc (sec, qty) ->
-                  match Market.price_of row sec with
-                  | Some p -> acc + (qty * p)
-                  | None -> acc)
-                0 held
-            in
-            let available_cash = Portfolio.cash portfolio + sale_proceeds in
+            (* Selling every holding at today's prices converts the whole
+               portfolio to cash, so the cash available for the buy order is
+               the portfolio's value at today's prices. *)
+            let available_cash = Portfolio.value row portfolio in
             let buy_qty = available_cash / selected_price in
             let orders =
               if buy_qty > 0 then

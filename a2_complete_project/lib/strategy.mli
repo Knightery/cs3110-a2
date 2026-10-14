@@ -10,7 +10,8 @@ module type S = sig
   val name : string
 
   (** [init hold_symbol] creates the strategy's initial private state prior to
-      processing the first trading date. *)
+      processing the first trading date. [hold_symbol] is the value of the
+      [--hold] option, if any; strategies that need no option ignore it. *)
   val init : string option -> state
 
   (** [step st row portfolio] advances the strategy on a single date given only

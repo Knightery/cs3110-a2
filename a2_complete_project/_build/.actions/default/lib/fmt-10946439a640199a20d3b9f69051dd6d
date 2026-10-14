@@ -1,4 +1,0 @@
-(library
- (name a2)
- (public_name a2)
- (libraries batteries csv))

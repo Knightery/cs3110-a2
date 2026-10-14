@@ -27,7 +27,10 @@ type result = {
 (** [run (module Strat) ?hold_symbol ~initial_cash market] executes [Strat]
     across every date in [market.rows] in chronological order, starting with
     [initial_cash] cents and no shares. On each date, [Strat.step] receives only
-    that date's price row and current portfolio. *)
+    that date's price row and current portfolio; its orders are applied at that
+    row's prices before the portfolio is valued. [hold_symbol] is passed
+    unchanged to [Strat.init]. Requires: [initial_cash > 0] and [market.rows] is
+    nonempty. *)
 val run :
   (module Strategy.S) ->
   ?hold_symbol:string ->

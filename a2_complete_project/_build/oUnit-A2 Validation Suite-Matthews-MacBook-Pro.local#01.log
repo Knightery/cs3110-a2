@@ -1,9 +1,0 @@
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: Start test A2 Validation Suite:0:Group 1: Cash Strategy:0:cash on handout.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: Test A2 Validation Suite:0:Group 1: Cash Strategy:0:cash on handout.csv is successful.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: End test A2 Validation Suite:0:Group 1: Cash Strategy:0:cash on handout.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: Start test A2 Validation Suite:2:Group 3: Stateful (Momentum) Strategy:0:momentum on handout.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: Test A2 Validation Suite:2:Group 3: Stateful (Momentum) Strategy:0:momentum on handout.csv is successful.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: End test A2 Validation Suite:2:Group 3: Stateful (Momentum) Strategy:0:momentum on handout.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: Start test A2 Validation Suite:2:Group 3: Stateful (Momentum) Strategy:1:momentum on custom.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: Test A2 Validation Suite:2:Group 3: Stateful (Momentum) Strategy:1:momentum on custom.csv is successful.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#01 I: End test A2 Validation Suite:2:Group 3: Stateful (Momentum) Strategy:1:momentum on custom.csv.

@@ -40,18 +40,13 @@ let run (module Strat : Strategy.S) ?(hold_symbol : string option)
       market.rows
   in
   let history = List.rev rev_history in
-  let start_date, end_date =
-    match history with
-    | [] -> ("", "")
-    | first :: _ ->
-        let last = List.hd rev_history in
-        (first.date, last.date)
+  let start_date, end_date, final_value =
+    match (history, rev_history) with
+    | first :: _, last :: _ -> (first.date, last.date, last.value)
+    | _ -> ("", "", initial_cash)
   in
   let final_cash = Portfolio.cash final_portfolio in
   let final_holdings = Portfolio.holdings final_portfolio in
-  let final_value =
-    match rev_history with last :: _ -> last.value | [] -> initial_cash
-  in
   let total_return = Portfolio.total_return ~initial_cash ~final_value in
   {
     strategy_name = Strat.name;

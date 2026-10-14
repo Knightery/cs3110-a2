@@ -1,6 +1,0 @@
-description = ""
-requires = "batteries csv"
-archive(byte) = "a2.cma"
-archive(native) = "a2.cmxa"
-plugin(byte) = "a2.cma"
-plugin(native) = "a2.cmxs"

@@ -1,9 +1,0 @@
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: Start test A2 Validation Suite:1:Group 2: Buy-and-Hold Strategy:0:buy-and-hold ALFA on handout.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: Test A2 Validation Suite:1:Group 2: Buy-and-Hold Strategy:0:buy-and-hold ALFA on handout.csv is successful.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: End test A2 Validation Suite:1:Group 2: Buy-and-Hold Strategy:0:buy-and-hold ALFA on handout.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: Start test A2 Validation Suite:1:Group 2: Buy-and-Hold Strategy:1:buy-and-hold APEX on custom.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: Test A2 Validation Suite:1:Group 2: Buy-and-Hold Strategy:1:buy-and-hold APEX on custom.csv is successful.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: End test A2 Validation Suite:1:Group 2: Buy-and-Hold Strategy:1:buy-and-hold APEX on custom.csv.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: Start test A2 Validation Suite:3:Portfolio Accounting Rules:0:rejected orders followed by valid orders.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: Test A2 Validation Suite:3:Portfolio Accounting Rules:0:rejected orders followed by valid orders is successful.
-2026-10-14T19:43:49+00:00 Matthews-MacBook-Pro.local#02 I: End test A2 Validation Suite:3:Portfolio Accounting Rules:0:rejected orders followed by valid orders.

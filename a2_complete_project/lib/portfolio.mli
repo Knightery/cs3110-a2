@@ -1,8 +1,7 @@
 (** Portfolio state, order execution, and valuation in integer cents. *)
 
-type direction =
-  | Buy
-  | Sell  (** [direction] indicates whether an order buys or sells shares. *)
+(** [direction] indicates whether an order buys or sells shares. *)
+type direction = Buy | Sell
 
 (** [order] represents a proposed trade of [quantity] whole shares of [security]
     in [direction]. *)
@@ -12,7 +11,7 @@ type order = { security : string; direction : direction; quantity : int }
 type t
 
 (** [init initial_cash] creates a portfolio starting with [initial_cash] cents
-    and no share holdings. *)
+    and no share holdings. Requires: [initial_cash >= 0]. *)
 val init : int -> t
 
 (** [cash p] is the current cash balance of portfolio [p] in integer cents. *)

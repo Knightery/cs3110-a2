@@ -1,0 +1,9 @@
+# dune build output
+_build/
+*.install
+
+# macOS Finder metadata
+.DS_Store
+
+# equity CSVs written by manual runs
+equity*.csv
