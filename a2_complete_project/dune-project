@@ -1,0 +1,8 @@
+(lang dune 3.0)
+(name a2)
+(generate_opam_files true)
+(authors "Matthew Wang")
+(maintainers "Matthew Wang")
+(package
+ (name a2)
+ (depends ocaml dune ounit2 batteries csv))

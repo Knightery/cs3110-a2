@@ -1,0 +1,10 @@
+(test
+ (name test_a2)
+ (libraries ounit2 a2)
+ (deps
+  (glob_files ../data/*.csv)))
+
+(cram
+ (deps
+  ../bin/main.exe
+  (glob_files ../data/*.csv)))
